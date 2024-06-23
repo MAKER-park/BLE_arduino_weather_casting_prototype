@@ -187,14 +187,16 @@ class _MyHomePageState extends State<MyHomePage> {
             if (_isConnected) ...[
               Expanded(
                 child: GridView.count(
-                  crossAxisCount: 3, // 그리드의 열 수
+                  crossAxisCount: 2, // 그리드의 열 수를 2로 설정
                   crossAxisSpacing: 10.0,
                   mainAxisSpacing: 10.0,
                   padding: EdgeInsets.all(10.0),
-                  children: List.generate(9, (index) {
+                  children: [
+                    '눈 온도 높다', '눈 온도 낮다', '비 온도 높다', '비 온도 낮다',
+                    '맑음 온도 높다', '맑음 온도 낮다', '흐림 온도 높다', '흐림 온도 낮다',
+                    '바람 온도 높다', '바람 온도 낮다'
+                  ].map((name) {
                     return Container(
-                      width: 70, // 버튼 너비
-                      height: 70, // 버튼 높이
                       decoration: BoxDecoration(
                         color: Colors.blue,
                         borderRadius: BorderRadius.circular(8.0),
@@ -206,14 +208,15 @@ class _MyHomePageState extends State<MyHomePage> {
                             borderRadius: BorderRadius.circular(8.0),
                           ),
                         ),
-                        onPressed: () => _sendMessage('${index + 1}'),
+                        onPressed: () => _sendMessage(name),
                         child: Text(
-                          '버튼 ${index + 1}',
+                          name,
                           style: TextStyle(color: Colors.white),
+                          textAlign: TextAlign.center, // 텍스트를 중앙 정렬
                         ),
                       ),
                     );
-                  }),
+                  }).toList(),
                 ),
               ),
             ],
