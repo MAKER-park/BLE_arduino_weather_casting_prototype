@@ -9,6 +9,7 @@ REV : 0.01
 */
 
 //import header
+#include <string.h>
 #include <SPI.h>
 #include <SdFat.h>
 #include <FreeStack.h>
@@ -29,19 +30,20 @@ Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 //global variable
 SdFat sd;
 SFEMP3Shield MP3player;
-int volume = 15, val = 0, pirState = LOW, select_case = 1;
+int volume = 15, val = 0, pirState = LOW, select_case = 1, R = 0, G = 0, B = 0;
 SoftwareSerial BTSerial(4, 5);  // 소프트웨어 시리얼 (TX,RX)
   //눈 비 맑음 흐림 바람 - 날씨 (눈 - 50,50,50/ 비 - 10,10,50 / 맑음 - 50,50,0 / 흐림 - 25,25,25 / 바람 - 0,0,25)
   //기온 어제보다 높다 낮다 (높다 - 50,0,0/ 낮다 - 0,0,50)
-char *fileList1[] = { "1.greet.mp3", "2-1.clear.mp3", "3-1.temp_down.mp3" };//눈 / 온도 높다
-char *fileList2[] = { "1.greet.mp3", "2-1.clear.mp3", "3-1.temp_down.mp3" };//눈 / 온도 낮다
-char *fileList3[] = { "1.greet.mp3", "2-1.clear.mp3", "3-1.temp_down.mp3" };//비 / 온도 높다
-char *fileList4[] = { "1.greet.mp3", "2-1.clear.mp3", "3-1.temp_down.mp3" };//비 / 온도 낮다
-char *fileList5[] = { "1.greet.mp3", "2-1.clear.mp3", "3-1.temp_down.mp3" };//맑음 / 온도 높다
-char *fileList7[] = { "1.greet.mp3", "2-1.clear.mp3", "3-1.temp_down.mp3" };//흐림 / 온도 높다
-char *fileList8[] = { "1.greet.mp3", "2-1.clear.mp3", "3-1.temp_down.mp3" };//흐림 / 온도 낮다
-char *fileList9[] = { "1.greet.mp3", "2-1.clear.mp3", "3-1.temp_down.mp3" };//바람 / 온도 높다
-char *fileList10[] = { "1.greet.mp3", "2-1.clear.mp3", "3-1.temp_down.mp3" };//바람 / 온도 낮다
+char *fileList1[] = { "1.greet.mp3", "2-1.snow.mp3", "3-1.tmep_up.mp3" };//눈 / 온도 높다
+char *fileList2[] = { "1.greet.mp3", "2-1.snow.mp3", "3-2.temp_down.mp3" };//눈 / 온도 낮다
+char *fileList3[] = { "1.greet.mp3", "2-2.rain.mp3", "3-1.tmep_up.mp3" };//비 / 온도 높다
+char *fileList4[] = { "1.greet.mp3", "2-2.rain.mp3", "3-2.temp_down.mp3" };//비 / 온도 낮다
+char *fileList5[] = { "1.greet.mp3", "2-3.clear.mp3", "3-1.tmep_up.mp3" };//맑음 / 온도 높다
+char *fileList6[] = { "1.greet.mp3", "2-3.clear.mp3", "3-2.temp_down.mp3" };//맑음 / 온도 낮다
+char *fileList7[] = { "1.greet.mp3", "2-4.cloudy.mp3", "3-1.tmep_up.mp3" };//흐림 / 온도 높다
+char *fileList8[] = { "1.greet.mp3", "2-4.cloudy.mp3", "3-2.temp_down.mp3" };//흐림 / 온도 낮다
+char *fileList9[] = { "1.greet.mp3", "2-5.windy.mp3", "3-1.tmep_up.mp3" };//바람 / 온도 높다
+char *fileList10[] = { "1.greet.mp3", "2-5.windy.mp3", "3-2.temp_down.mp3" };//바람 / 온도 낮다
 uint8_t result;
 
 char **fileLists[] = { fileList1, fileList2, fileList3, fileList4, fileList5, fileList6, fileList7, fileList8, fileList9, fileList10 };
@@ -63,13 +65,15 @@ void play_audio(int case_num) {
     Serial.println(fileList[i]);
     if (i == 0) {
       pixels.clear();
-      LED_show(50, 50, 50);  //white?
+      LED_show(fileList[i]);  //white?
     } else if (i == 1) {
       pixels.clear();
-      LED_show(0, 50, 50);  //clear?
+      LED_show(fileList[i]);  //white?
+      // LED_show(0, 50, 50);  //clear?
     } else if (i == 2) {
       pixels.clear();
-      LED_show(0, 0, 50);  //down?
+      LED_show(fileList[i]);  //white?
+      // LED_show(0, 0, 50);  //down?
     }
     result = MP3player.playMP3(fileList[i]);
     if (result != 0) {
@@ -85,11 +89,41 @@ void play_audio(int case_num) {
 }
 
 
-void LED_show(int R, int G, int B) {
+void LED_show(String LED_case) {
   //눈 비 맑음 흐림 바람 - 날씨 (눈 - 50,50,50/ 비 - 10,10,50 / 맑음 - 50,50,0 / 흐림 - 25,25,25 / 바람 - 0,0,25)
   //기온 어제보다 높다 낮다 (높다 - 50,0,0/ 낮다 - 0,0,50)
+  /*
+  1.greet.mp3
+  2-1.snow.mp3
+  2-2.rain.mp3
+  2-3.clear.mp3
+  2-4.cloudy.mp3
+  2-5.windy.mp3
+  3-1.tmep_up.mp3
+  3-2.temp_down.mp3
+  */
+  Serial.print("LED_case : ");
+  Serial.println(LED_case);
+  if(LED_case == "init"){
+    R = 0, G = 0, B = 0;
+  }else if(LED_case == "1.greet.mp3"){
+    R = 100, G = 100, B = 100;
+  }else if(LED_case == "2-1.snow.mp3"){
+    R = 50, G = 50, B = 50;
+  }else if(LED_case == "2-2.rain.mp3"){
+    R = 10, G = 10, B = 50;
+  }else if(LED_case == "2-3.clear.mp3"){
+    R = 50, G = 50, B = 50;
+  }else if(LED_case == "2-4.cloudy.mp3"){
+    R = 25, G = 25, B = 25;
+  }else if(LED_case == "2-5.windy.mp3"){
+    R = 0, G = 10, B = 25;
+  }else if(LED_case == "3-1.tmep_up.mp3"){
+    R = 50, G = 0, B = 0;
+  }else if(LED_case == "3-2.temp_down.mp3"){
+    R = 0, G = 0, B = 50;
+  }
   for (int i = 0; i < NUMPIXELS; i++) {  // For each pixel...
-
     // pixels.Color() takes RGB values, from 0,0,0 up to 255,255,255
     // Here we're using a moderately bright green color:
     pixels.setPixelColor(i, pixels.Color(R, G, B));
@@ -122,7 +156,7 @@ void setup() {
   clock_prescale_set(clock_div_1);
 #endif
   pixels.begin();     // INITIALIZE NeoPixel strip object (REQUIRED)
-  LED_show(0, 0, 0);  //white?
+  LED_show("init");  //white?
   pixels.clear();     // Set all pixel colors to 'off'
 }
 
@@ -171,7 +205,7 @@ void loop() {
         Serial.println(data);
         break;
     }
-    LED_show(0, 0, 0);  //white?
+    LED_show("init");  //white?
   }
 
   while (Serial.available()) {  //come in pc or serial data
@@ -183,7 +217,7 @@ void loop() {
   if (val == HIGH) {
     if (pirState == LOW) {
       Serial.println("detect!");
-      LED_show(50, 50, 50);  //greeting and detect human
+      // LED_show(50, 50, 50);  //greeting and detect human
       pirState = HIGH;
       //run_play audio
       Serial.print("your case number : ");
@@ -193,7 +227,7 @@ void loop() {
   } else {
     if (pirState == HIGH) {
       Serial.println("dissapear!");
-      LED_show(0, 0, 0);  //white?
+      LED_show("init");  //white?
       pirState = LOW;
     }
   }
