@@ -50,11 +50,25 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _checkBluetoothStatus() async {
-    var status = await Permission.bluetooth.status;
-    setState(() {
-      _isBluetoothEnabled = status.isGranted;
-    });
+  var status = await Permission.bluetooth.status;
+  if (!status.isGranted) {
+    status = await Permission.bluetooth.request();
   }
+
+  var locationStatus = await Permission.locationWhenInUse.status;
+  if (!locationStatus.isGranted) {
+    locationStatus = await Permission.locationWhenInUse.request();
+  }
+
+  setState(() {
+    _isBluetoothEnabled = status.isGranted && locationStatus.isGranted;
+  });
+
+  if (status.isPermanentlyDenied || locationStatus.isPermanentlyDenied) {
+    openAppSettings();
+  }
+}
+
 
   void _navigateToScanScreen() async {
     if (_isBluetoothEnabled) {
@@ -116,7 +130,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   _isConnected = true;
                 });
                 print('타겟 특성을 설정하였습니다: ${characteristic.uuid}');
-              } 
+              }
               if (characteristic.properties.notify) {
                 print('알림 가능한 특성입니다.');
                 _receiveCharacteristic = characteristic;
@@ -139,7 +153,7 @@ class _MyHomePageState extends State<MyHomePage> {
     print('버튼 클릭 : $message');
     if (_characteristic != null) {
       try {
-        await _characteristic!.write(utf8.encode(message+"\n"));
+        await _characteristic!.write(utf8.encode(message + "\n"));
         print('메시지 전송 성공: $message');
       } catch (e) {
         print('메시지 전송 중 오류 발생: $e');
@@ -185,52 +199,52 @@ class _MyHomePageState extends State<MyHomePage> {
             if (!_isBluetoothEnabled)
               Text('블루투스 기능을 켜주세요.'),
             if (_isConnected) ...[
-  Expanded(
-    child: GridView.count(
-      crossAxisCount: 3, // 그리드의 열 수를 3로 설정
-      crossAxisSpacing: 5.0,
-      mainAxisSpacing: 5.0,
-      padding: EdgeInsets.all(10.0),
-      children: [
-        // 버튼에 표시될 텍스트 목록
-        '눈 온도 높다', '눈 온도 낮다', '비 온도 높다', '비 온도 낮다',
-        '맑음 온도 높다', '맑음 온도 낮다', '흐림 온도 높다', '흐림 온도 낮다',
-        '바람 온도 높다', '바람 온도 낮다'
-      ].asMap().entries.map((entry) {
-        int index = entry.key;
-        String name = entry.value;
-        
-        // 각 버튼을 눌렀을 때 보낼 메시지 목록
-        List<String> messages = [
-          '0', '1', '2', '3',
-          '4', '5', '6', '7',
-          '8', '9'
-        ];
-        
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.blue,
-            borderRadius: BorderRadius.circular(8.0),
-          ),
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue, // 버튼 색상
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.0),
+              Expanded(
+                child: GridView.count(
+                  crossAxisCount: 3, // 그리드의 열 수를 3로 설정
+                  crossAxisSpacing: 5.0,
+                  mainAxisSpacing: 5.0,
+                  padding: EdgeInsets.all(10.0),
+                  children: [
+                    // 버튼에 표시될 텍스트 목록
+                    '눈 온도 높다', '눈 온도 낮다', '비 온도 높다', '비 온도 낮다',
+                    '맑음 온도 높다', '맑음 온도 낮다', '흐림 온도 높다', '흐림 온도 낮다',
+                    '바람 온도 높다', '바람 온도 낮다'
+                  ].asMap().entries.map((entry) {
+                    int index = entry.key;
+                    String name = entry.value;
+
+                    // 각 버튼을 눌렀을 때 보낼 메시지 목록
+                    List<String> messages = [
+                      '0', '1', '2', '3',
+                      '4', '5', '6', '7',
+                      '8', '9'
+                    ];
+
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue, // 버튼 색상
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                        onPressed: () => _sendMessage(messages[index]),
+                        child: Text(
+                          name,
+                          style: TextStyle(color: Colors.white),
+                          textAlign: TextAlign.center, // 텍스트를 중앙 정렬
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
               ),
-            ),
-            onPressed: () => _sendMessage(messages[index]),
-            child: Text(
-              name,
-              style: TextStyle(color: Colors.white),
-              textAlign: TextAlign.center, // 텍스트를 중앙 정렬
-            ),
-          ),
-        );
-      }).toList(),
-    ),
-  ),
-],
+            ],
           ],
         ),
       ),

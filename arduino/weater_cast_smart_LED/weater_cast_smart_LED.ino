@@ -23,7 +23,7 @@ REV : 0.01
 //define
 #define PIN 3         // On Trinket or Gemma, suggest changing this to 1
 #define NUMPIXELS 36  // Popular NeoPixel ring size
-#define DELAYVAL 50   // Time (in milliseconds) to pause between pixels
+#define DELAYVAL 10   // Time (in milliseconds) to pause between pixels
 Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 #define FILE_LIST(num) fileList##num  //thank you for OGS!!
 

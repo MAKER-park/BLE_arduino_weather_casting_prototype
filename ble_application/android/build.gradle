@@ -29,3 +29,12 @@ subprojects {
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
+
+// buildTypes {
+//     release {
+//         minifyEnabled false
+//         shrinkResources false
+//         proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+//     }
+// }
+
